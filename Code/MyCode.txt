@@ -1,0 +1,529 @@
+#include <TinyWireM.h>
+#include <avr/pgmspace.h>
+
+// --- Config ---
+#define OLED_ADDR 0x3C
+#define SCREEN_W 128
+#define SCREEN_H 64
+#define GRAPH_SPEED 2
+
+// --- PIN DEFINITIONS (ATtiny85) ---
+#define INPUT_PIN     A2  
+#define PIN_DATA      1   
+#define PIN_CONTROL   3   
+#define PIN_CLOCK     2   
+
+// --- THRESHOLDS ---
+#define THRESHOLD_LOW 62
+#define THRESHOLD_HIGH 260
+
+// --- SYSTEM STATES ---
+enum SystemState { BOOT, MENU, MODE };
+SystemState systemState = BOOT;
+unsigned long stateStartTime = 0;
+
+// Flag to prevent menu flickering
+bool menuDrawn = false;
+
+// --- BUTTON MASKS ---
+#define BTN_BACK   0b00000010  
+#define BTN_AST    0b00000100  
+#define BTN_MONO   0b00001000  
+#define BTN_BI     0b00010000  
+#define BTN_MASK   (BTN_BACK | BTN_AST | BTN_MONO | BTN_BI)
+
+// Page Buffer (128 bytes RAM)
+uint8_t pageBuffer[128];
+uint8_t currentPage = 0; 
+
+// Graph & Logic Variables
+const uint8_t graphX = 28; 
+const uint8_t graphY = 55;
+const uint8_t graphH = 25;
+uint8_t waveHistory[100]; // (100 bytes RAM)
+uint8_t currentLevel = 0; 
+uint8_t scrollTimer = 0; 
+uint8_t currentMode = 0; 
+uint8_t currentPowerByte = 0b00000001; 
+
+// Sampling
+uint8_t sampleCounter = 0;
+const uint8_t REQUIRED_SAMPLES = 3; 
+
+// --- FAKE ASTABLE VARIABLES ---
+uint8_t fakeTimer = 0;
+uint8_t fakeState = 1;
+
+// --- BOOT ANIMATION VARS ---
+uint8_t bootPhase = 0;
+
+// --- FONT DATA (Fixed & Complete) ---
+const char charList[] = " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.";
+
+const uint8_t fontData[] PROGMEM = {
+  0x00,0x00,0x00,0x00,0x00, // Space
+  0x3E,0x51,0x49,0x45,0x3E, // 0
+  0x00,0x42,0x7F,0x40,0x00, // 1
+  0x42,0x61,0x51,0x49,0x46, // 2
+  0x21,0x41,0x45,0x4B,0x31, // 3
+  0x18,0x14,0x12,0x7F,0x10, // 4
+  0x27,0x45,0x45,0x45,0x39, // 5
+  0x3C,0x4A,0x49,0x49,0x30, // 6
+  0x01,0x71,0x09,0x05,0x03, // 7
+  0x36,0x49,0x49,0x49,0x36, // 8
+  0x06,0x49,0x49,0x29,0x1E, // 9
+  0x7E,0x11,0x11,0x11,0x7E, // A
+  0x7F,0x49,0x49,0x49,0x36, // B
+  0x3E,0x41,0x41,0x41,0x22, // C
+  0x7F,0x41,0x41,0x22,0x1C, // D
+  0x7F,0x49,0x49,0x49,0x41, // E
+  0x7F,0x09,0x09,0x09,0x01, // F
+  0x3E,0x41,0x49,0x49,0x7A, // G
+  0x7F,0x08,0x08,0x08,0x7F, // H
+  0x00,0x41,0x7F,0x41,0x00, // I
+  0x20,0x40,0x41,0x3F,0x01, // J
+  0x7F,0x08,0x14,0x22,0x41, // K
+  0x7F,0x40,0x40,0x40,0x40, // L
+  0x7F,0x02,0x0C,0x02,0x7F, // M
+  0x7F,0x04,0x08,0x10,0x7F, // N
+  0x3E,0x41,0x41,0x41,0x3E, // O
+  0x7F,0x09,0x09,0x09,0x06, // P
+  0x3E,0x41,0x51,0x21,0x5E, // Q
+  0x7F,0x09,0x19,0x29,0x46, // R
+  0x46,0x49,0x49,0x49,0x31, // S
+  0x01,0x01,0x7F,0x01,0x01, // T
+  0x3F,0x40,0x40,0x40,0x3F, // U
+  0x1F,0x20,0x40,0x20,0x1F, // V
+  0x3F,0x40,0x38,0x40,0x3F, // W
+  0x63,0x14,0x08,0x14,0x63, // X
+  0x07,0x08,0x70,0x08,0x07, // Y
+  0x61,0x51,0x49,0x45,0x43, // Z
+  0x20,0x54,0x54,0x54,0x78, // a
+  0x7F,0x48,0x44,0x44,0x38, // b
+  0x38,0x44,0x44,0x44,0x00, // c
+  0x38,0x44,0x44,0x48,0x7F, // d
+  0x38,0x54,0x54,0x54,0x18, // e
+  0x08,0x7E,0x09,0x01,0x02, // f
+  0x0C,0x52,0x52,0x52,0x3E, // g
+  0x7F,0x08,0x04,0x04,0x78, // h
+  0x00,0x44,0x7D,0x40,0x00, // i
+  0x20,0x40,0x44,0x3D,0x00, // j
+  0x7F,0x10,0x28,0x44,0x00, // k
+  0x00,0x41,0x7F,0x40,0x00, // l
+  0x7C,0x04,0x18,0x04,0x78, // m
+  0x7C,0x08,0x04,0x04,0x78, // n
+  0x38,0x44,0x44,0x44,0x38, // o
+  0x7C,0x14,0x14,0x14,0x08, // p
+  0x08,0x14,0x14,0x18,0x7C, // q
+  0x7C,0x08,0x04,0x04,0x08, // r
+  0x48,0x54,0x54,0x54,0x20, // s
+  0x04,0x3F,0x44,0x40,0x20, // t
+  0x3C,0x40,0x40,0x20,0x7C, // u
+  0x1C,0x20,0x40,0x20,0x1C, // v
+  0x3C,0x40,0x30,0x40,0x3C, // w
+  0x44,0x28,0x10,0x28,0x44, // x
+  0x0C,0x50,0x50,0x50,0x3C, // y
+  0x44,0x64,0x54,0x4C,0x44, // z
+  0x00,0x60,0x60,0x00,0x00  // .
+};
+
+// --- LOW LEVEL FUNCTIONS ---
+void writeShiftRegister(uint8_t data) {
+  pinMode(PIN_DATA, OUTPUT); pinMode(PIN_CLOCK, OUTPUT); pinMode(PIN_CONTROL, OUTPUT);
+  digitalWrite(PIN_CLOCK, LOW); delayMicroseconds(5); 
+  shiftOut(PIN_DATA, PIN_CLOCK, MSBFIRST, data);
+  digitalWrite(PIN_CONTROL, LOW); delayMicroseconds(5); 
+  digitalWrite(PIN_CONTROL, HIGH); delayMicroseconds(5); 
+  digitalWrite(PIN_CONTROL, LOW);
+}
+
+// Fixed Shift Register Read (Stable)
+uint8_t readShiftRegister() {
+  pinMode(PIN_DATA, INPUT); 
+  pinMode(PIN_CLOCK, OUTPUT); 
+  pinMode(PIN_CONTROL, OUTPUT);
+  
+  digitalWrite(PIN_CLOCK, LOW); 
+  digitalWrite(PIN_CONTROL, HIGH); 
+  delayMicroseconds(5);
+  
+  digitalWrite(PIN_CONTROL, LOW);  
+  delayMicroseconds(5);           
+  digitalWrite(PIN_CONTROL, HIGH); 
+  
+  return shiftIn(PIN_DATA, PIN_CLOCK, MSBFIRST);
+}
+
+// --- GLOBAL BUTTON CHECKER ---
+bool checkAndHandleButtons() {
+  writeShiftRegister(0);                 
+  uint8_t inputs = readShiftRegister();  
+  
+  if (systemState == MODE) writeShiftRegister(currentPowerByte);
+  else writeShiftRegister(0);
+
+  uint8_t rawBtns = ~inputs; 
+  uint8_t currentBtns = rawBtns & BTN_MASK;
+  
+  static uint8_t lastBtns = 0;
+  static unsigned long lastTime = 0;
+  
+  // Debounce check
+  if (millis() - lastTime < 50) {
+      TinyWireM.begin(); 
+      return false; 
+  }
+
+  if (currentBtns != lastBtns) {
+    uint8_t pressed = currentBtns & (~lastBtns);
+    lastBtns = currentBtns;
+    lastTime = millis();
+
+    if (pressed == 0) {
+        TinyWireM.begin();
+        return false;
+    }
+
+    // --- BUTTON ACTIONS ---
+    if (pressed & BTN_BACK) {
+        if (systemState == MENU) { TinyWireM.begin(); return false; }
+        currentPowerByte = 0;      
+        writeShiftRegister(0);      
+        systemState = MENU;
+        menuDrawn = false; 
+        TinyWireM.begin(); 
+        return true; 
+    }
+    if (pressed & BTN_AST) {
+        if (systemState == MODE && currentMode == 0) { TinyWireM.begin(); return false; }
+        currentMode = 0; currentPowerByte = 0b00000001; 
+        fakeTimer = 0; fakeState = 1; 
+        memset(waveHistory, 0, 100);
+        currentLevel = 0; systemState = MODE; 
+        TinyWireM.begin(); 
+        return true;
+    }
+    if (pressed & BTN_MONO) {
+        if (systemState == MODE && currentMode == 1) { TinyWireM.begin(); return false; }
+        currentMode = 1; currentPowerByte = 0b00000010; 
+        memset(waveHistory, 0, 100);
+        currentLevel = 0; systemState = MODE; 
+        TinyWireM.begin(); 
+        return true;
+    }
+    if (pressed & BTN_BI) {
+        if (systemState == MODE && currentMode == 2) { TinyWireM.begin(); return false; }
+        currentMode = 2; currentPowerByte = 0b00001000; 
+        memset(waveHistory, 0, 100);
+        currentLevel = 0; 
+        sampleCounter = 0; 
+        scrollTimer = 100;
+        systemState = MODE; 
+        TinyWireM.begin(); 
+        return true;
+    }
+  }
+  
+  TinyWireM.begin();
+  return false;
+}
+
+// --- OLED HELPERS ---
+void oledCmd(uint8_t c) {
+  TinyWireM.beginTransmission(OLED_ADDR); TinyWireM.write(0x00); TinyWireM.write(c); TinyWireM.endTransmission();
+}
+
+void drawPixel(int x, int y) {
+  if (x >= 0 && x < SCREEN_W && y >= 0 && y < SCREEN_H) {
+    if (y / 8 == currentPage) pageBuffer[x] |= (1 << (y % 8));
+  }
+}
+
+void drawStr(int x, int y, const char* str) {
+  if (y > (currentPage * 8) + 8 || y + 8 < (currentPage * 8)) return;
+  while (*str) {
+    const char* ptr = strchr(charList, *str);
+    if (ptr) {
+      int idx = ptr - charList;
+      for (uint8_t col = 0; col < 5; col++) {
+        uint8_t line = pgm_read_byte(&fontData[idx * 5 + col]);
+        for (uint8_t bit = 0; bit < 8; bit++) {
+          if (line & (1 << bit)) drawPixel(x + col, y + bit);
+        }
+      }
+    }
+    x += 6; str++;
+  }
+}
+
+void drawStrBold(int x, int y, const char* str) {
+  drawStr(x, y, str);
+  drawStr(x + 1, y, str);
+}
+
+void drawStrBoldSpaced(int x, int y, const char* str, uint8_t spacing) {
+  if (y > (currentPage * 8) + 8 || y + 8 < (currentPage * 8)) return;
+
+  while (*str) {
+    const char* ptr = strchr(charList, *str);
+    if (ptr) {
+      int idx = ptr - charList;
+      for (uint8_t col = 0; col < 5; col++) {
+        uint8_t line = pgm_read_byte(&fontData[idx * 5 + col]);
+        for (uint8_t bit = 0; bit < 8; bit++) {
+          if (line & (1 << bit)) {
+            drawPixel(x + col,     y + bit);
+            drawPixel(x + col + 1, y + bit); 
+          }
+        }
+      }
+    }
+    x += 6 + spacing;   
+    str++;
+  }
+}
+
+// Custom Scaler Function (sizeTenths: 10 = 1.0x, 15 = 1.5x, etc.)
+// Custom Scaler Function with Spacing
+// sizeTenths: 15 = 1.5x size
+// spacing: 1 = Standard, 2 = Wide, 3 = Extra Wide
+void drawStrScaled(int x, int y, const char* str, uint8_t sizeTenths, uint8_t spacing) {
+  int startX = x;
+  int col_count = 0; // cumulative column counter
+
+  while (*str) {
+    const char* ptr = strchr(charList, *str);
+    if (ptr) {
+      int idx = ptr - charList;
+      for (uint8_t col = 0; col < 5; col++) { // 5 columns per char
+        uint8_t line = pgm_read_byte(&fontData[idx * 5 + col]);
+
+        // Calculate scaled X width based on cumulative columns
+        int px_start = startX + (col_count * sizeTenths) / 10;
+        int px_end   = startX + ((col_count + 1) * sizeTenths) / 10;
+
+        for (uint8_t bit = 0; bit < 8; bit++) { 
+          if (line & (1 << bit)) {
+             // Calculate scaled Y height
+             int py_start = y + (bit * sizeTenths) / 10;
+             int py_end   = y + ((bit + 1) * sizeTenths) / 10;
+
+             // Draw the scaled block
+             for (int px = px_start; px < px_end; px++) {
+               for (int py = py_start; py < py_end; py++) {
+                 drawPixel(px, py);
+               }
+             }
+          }
+        }
+        col_count++; // Advance column counter
+      }
+    }
+    // ADD SPACING HERE
+    col_count += spacing; 
+    str++;
+  }
+}
+
+void sendPage() {
+    for (int i = 0; i < 128; i += 8) {
+       TinyWireM.beginTransmission(OLED_ADDR); 
+       TinyWireM.write(0x40); 
+       for (int j = 0; j < 8; j++) {
+         TinyWireM.write(pageBuffer[i + j]);
+       }
+       TinyWireM.endTransmission();
+    }
+}
+
+// --- SCREENS ---
+void drawBootScreen() {
+  currentPage = 0; 
+  
+  oledCmd(0x21); oledCmd(0); oledCmd(127); oledCmd(0x22); oledCmd(0); oledCmd(7);
+  
+  unsigned long elapsed = millis() - stateStartTime;
+  if (elapsed > 3500) elapsed = 3500;
+  int progressW = (elapsed * 128) / 3500; 
+
+  // Advance phase on every page draw for faster speed
+  if (currentPage == 0) bootPhase += 2; 
+
+  // --- LAYOUT CONSTANTS ---
+  const int midY = 32; // Vertical Center
+
+  for (currentPage = 0; currentPage < 8; currentPage++) {
+    memset(pageBuffer, 0, 128); 
+    
+    // ---- 1. HEADER (Top aligned) ----
+    // 10, 2 -> X,Y coordinates
+// 15    -> Size 1.5x (Try 14 or 16 to fine tune!)
+// x=10, y=2, text="...", size=15 (1.5x), spacing=2
+drawStrScaled(10, 2, "555 TIMER IC", 14, 2);
+drawStrScaled(11, 2, "555 TIMER IC", 14, 2);
+    drawStr(34, 18, "Visualizer");                // Subtitle
+
+    // ---- 2. FULL SCREEN FAST WAVE ----
+    // ---- SMALL CENTER SQUARE WAVE ----
+const int waveStartX = 28;
+const int waveWidth  = 72;
+const int midY = 38;
+const int amp = 4;
+const int period = 12;
+
+for (int i = 0; i < waveWidth; i++) {
+
+  int x = waveStartX + i;
+  int t = i + bootPhase;
+  int lvl = (t / period) & 1;
+  int y = lvl ? (midY - amp) : (midY + amp);
+
+  drawPixel(x, y);
+
+  if (i > 0) {
+    int t2 = (i - 1) + bootPhase;
+    int lvl2 = (t2 / period) & 1;
+    if (lvl != lvl2) {
+      for (int v = midY - amp; v <= midY + amp; v++) {
+        drawPixel(x, v);
+      }
+    }
+  }
+}
+
+    // ---- 3. PROGRESS BAR (Bottom) ----
+    for(int x=0; x<128; x++) { drawPixel(x, 54); drawPixel(x, 61); } 
+    for(int y=54; y<=61; y++) { 
+        drawPixel(0, y); drawPixel(127, y); 
+        drawPixel(1, y); drawPixel(126, y);
+    } 
+
+    if (progressW > 4) {
+       for(int x=3; x < progressW - 2; x++) {
+          for(int y=56; y < 60; y++) {
+             drawPixel(x, y);
+          }
+       }
+    }
+    
+    sendPage();
+  }
+
+  if (elapsed >= 3500) {
+      systemState = MENU;
+      menuDrawn = false;
+  }
+}
+
+void drawMenuScreen() {
+  currentPage = 0; 
+  if (menuDrawn) { checkAndHandleButtons(); return; }
+  oledCmd(0x21); oledCmd(0); oledCmd(127); oledCmd(0x22); oledCmd(0); oledCmd(7);
+
+  for (currentPage = 0; currentPage < 8; currentPage++) {
+    memset(pageBuffer, 0, 128); 
+    for(int x=2; x<126; x++) { drawPixel(x, 0); drawPixel(x, 63); }
+    for(int y=2; y<62; y++) { drawPixel(0, y); drawPixel(127, y); }
+    drawPixel(1,1); drawPixel(126,1); drawPixel(1,62); drawPixel(126,62);
+    
+    drawStrBold(25, 4, "Select a mode");
+    for(int x=2; x<126; x++) drawPixel(x, 14);
+    drawStr(12, 24, "1. Astable mode");
+    drawStr(12, 36, "2. Monostable mode");
+    drawStr(12, 48, "3. Bistable mode");
+    sendPage();
+  }
+  menuDrawn = true;
+}
+
+// --- SETUP ---
+void setup() {
+  TinyWireM.begin(); 
+  static const uint8_t init[] PROGMEM = {0xAE,0x20,0x00,0x8D,0x14,0xA1,0xC8,0xDA,0x12,0x81,0xCF,0xAF};
+  for(uint8_t i=0; i<12; i++) oledCmd(pgm_read_byte(&init[i]));
+  
+  oledCmd(0x21); oledCmd(0); oledCmd(127); 
+  oledCmd(0x22); oledCmd(0); oledCmd(7);
+
+  for (uint16_t i=0; i<1024; i+=8) {
+      TinyWireM.beginTransmission(OLED_ADDR); 
+      TinyWireM.write(0x40);
+      for(uint8_t j=0; j<8; j++) TinyWireM.write(0x00);
+      TinyWireM.endTransmission();
+  }
+
+  writeShiftRegister(0); 
+  readShiftRegister(); 
+  checkAndHandleButtons(); 
+
+  systemState = BOOT;
+  stateStartTime = millis();
+  memset(waveHistory, 0, 100);
+  menuDrawn = false; 
+}
+
+// --- MAIN LOOP ---
+void loop() {
+  if (systemState != MENU) { if (checkAndHandleButtons()) return; }
+
+  if (systemState == BOOT) {
+    drawBootScreen();
+  }
+  else if (systemState == MENU) {
+    drawMenuScreen();
+  }
+  else if (systemState == MODE) {
+    // Mode Logic
+    if (currentMode == 0) {
+      fakeTimer++;
+      if (fakeTimer > 5) { fakeTimer = 0; fakeState = !fakeState; }
+      currentLevel = fakeState;
+      scrollTimer = 100; 
+    } else {
+      int val = analogRead(INPUT_PIN);
+      uint8_t suggestedLevel = currentLevel; 
+      if (val > THRESHOLD_HIGH) suggestedLevel = 1; else if (val < THRESHOLD_LOW) suggestedLevel = 0; 
+      if (suggestedLevel != currentLevel) {
+        sampleCounter++;
+        if (sampleCounter >= REQUIRED_SAMPLES) { currentLevel = suggestedLevel; scrollTimer = 100; sampleCounter = 0; }
+      } else sampleCounter = 0;
+    }
+    
+    // Wave scrolling
+    if (scrollTimer > 0) {
+      memmove(waveHistory, &waveHistory[GRAPH_SPEED], 100 - GRAPH_SPEED);
+      for (int i = 0; i < GRAPH_SPEED; i++) waveHistory[(100 - 1) - i] = currentLevel; 
+      if(currentMode != 0 && scrollTimer >= 1) scrollTimer--;
+    }
+    pinMode(PIN_CLOCK, OUTPUT); digitalWrite(PIN_CLOCK, HIGH); TinyWireM.begin(); 
+
+    oledCmd(0x21); oledCmd(0); oledCmd(127); oledCmd(0x22); oledCmd(0); oledCmd(7);
+    for (currentPage = 0; currentPage < 8; currentPage++) {
+      if (checkAndHandleButtons()) return; 
+      memset(pageBuffer, 0, 128); 
+      
+      // Mode Title
+      if (currentMode == 0) drawStr(32, 0, "Astable mode");
+      else if (currentMode == 1) drawStr(25, 0, "Monostable mode"); 
+      else drawStr(32, 0, "Bistable mode");
+      
+      drawStr(0, graphY - graphH - 4, "Vcc"); 
+      drawStr(6, graphY - 4, "0V");
+      for(int y=15; y<graphY; y++) drawPixel(graphX, y); 
+      for(int x=graphX; x<128; x++) drawPixel(x, graphY);
+      drawPixel(graphX, 15);     
+      drawPixel(graphX - 1, 16); 
+      drawPixel(graphX + 1, 16); 
+      drawStr(graphX - 10, 15, "v");
+
+      for(int i=0; i < 100; i++) {
+        int y = (waveHistory[i] == 1) ? (graphY - graphH) : (graphY - 2);
+        drawPixel(graphX + i, y);
+        if (i > 0 && waveHistory[i] != waveHistory[i-1]) {
+            for(int v = graphY - graphH; v < graphY - 2; v++) drawPixel(graphX + i, v);
+        }
+      }
+      sendPage();
+    }
+  }
+}
