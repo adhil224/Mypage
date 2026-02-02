@@ -4,10 +4,176 @@
   <meta charset="UTF-8">
   <title>555 Timer IC Visualizer – Project Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    /* 1. Basic Page Layout and Fonts */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f4f4f9; /* Slightly darker background for contrast */
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 25px;
+      border: 1px solid #e0e0e0;
+      background-color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    /* 2. Headings Styling */
+    h1, h2, h3, h4 {
+      color: #2c3e50;
+    }
+
+    h1 {
+      text-align: center;
+      text-transform: uppercase;
+      border-bottom: 3px solid #007BFF;
+      padding-bottom: 15px;
+      margin-bottom: 0;
+    }
+
+    h2 {
+      border-bottom: 2px solid #eee;
+      padding-bottom: 8px;
+      margin-top: 35px;
+    }
+
+    /* 3. Header/Title Section Alignment */
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      background-color: #f8fbff;
+      padding: 30px;
+      border-radius: 8px;
+      border: 1px solid #eef;
+    }
+
+    header p {
+      margin: 5px 0;
+    }
+
+    /* 4. Image Styling and Sizing */
+    figure {
+      text-align: center;
+      margin: 35px 0;
+    }
+
+    img {
+      max-width: 100%; /* Responsive width */
+      height: auto;
+      border: 1px solid #ddd;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 4px;
+      display: inline-block; /* Fixes potential spacing issues */
+    }
+
+    /* Specific class for larger images if needed, otherwise max-width: 100% handles it */
+    .large-image {
+        max-width: 700px;
+    }
+
+    figcaption {
+      font-style: italic;
+      color: #666;
+      margin-top: 10px;
+      font-size: 0.95em;
+    }
+
+    /* 5. Table Styling - IMPROVED */
+    /* Container for responsive horizontal scrolling */
+    .table-container {
+        width: 100%;
+        overflow-x: auto; /* Adds a scrollbar if the table is too wide */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0; /* Margin is now handled by the container */
+      font-size: 0.95em;
+      white-space: nowrap; /* Prevents awkward wrapping in small cells */
+    }
+
+    th {
+      background-color: #007BFF; /* Blue Header */
+      color: white;
+      padding: 12px 15px;
+      text-align: left;
+      border: 1px solid #0062cc; /* Slightly darker border for header */
+    }
+
+    td {
+      border: 1px solid #ddd;
+      padding: 10px 15px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f8f9fa; /* Lighter zebra striping */
+    }
+
+    tr:hover {
+      background-color: #e9ecef; /* Hover effect */
+    }
+    
+    /* Force some columns to wrap if they are too long (like descriptions) */
+    td:last-child {
+        white-space: normal;
+        min-width: 200px; /* Give description column some minimum width */
+    }
+
+
+    /* 6. Lists and Other Elements */
+    ul {
+      padding-left: 25px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    a {
+      color: #007BFF;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    a:hover {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+
+    /* 7. Author/Footer Section */
+    #author-info {
+      text-align: center;
+      background-color: #343a40; /* Darker footer */
+      color: #f8f9fa;
+      padding: 30px;
+      border-radius: 8px;
+      margin-top: 60px;
+    }
+
+    #author-info a {
+      color: #4da6ff;
+    }
+    
+    #author-info a:hover {
+      color: #80bdff;
+    }
+
+    hr {
+      border: 0;
+      height: 1px;
+      background-color: #ddd;
+      margin: 40px 0;
+    }
+  </style>
+
 </head>
 <body>
-
-  <!-- ================= TITLE PAGE ================= -->
 
   <header>
     <h1>555 Timer IC Visualizer</h1>
@@ -17,12 +183,8 @@
     <p><strong>Institution:</strong> Government Engineering College, Kozhikode</p>
     <p><strong>Batch : </strong> S2, ECE 2k25</p>
     <p><strong>Date:</strong> January 2026</p>
-    <!-- Optional -->
-    <!-- <p><strong>Guide:</strong> __________________</p> -->
   </header>
 
-
-  <!-- ================= INTRODUCTION ================= -->
 
   <section id="introduction">
     <h2> Introduction</h2>
@@ -35,19 +197,11 @@
 
 
 <figure>
-<img src ="Images/front_view.jpg" alt=" Boot screen image " style="max-width:100%; height:auto;">
-    
+<img src ="Images/front_view.jpg" alt=" Boot screen image " class="large-image">
 <figcaption> 555 Timer IC Visualizer
 </figcaption>
-
 </figure>
 
-
-
-
-
-
-  <!-- ================= OBJECTIVES ================= -->
 
   <section id="objectives">
   <h2> Objectives</h2>
@@ -62,8 +216,6 @@
     <li>To build a standalone device without dependence on external measurement equipment</li>
   </ul>
 </section>
-
-  <!-- ================= SYSTEM OVERVIEW ================= -->
 
   <section id="overview">
   <h2>System Overview</h2>
@@ -120,15 +272,12 @@
   
 </section>
 
-  <!-- ================= HARDWARE DESIGN ================= -->
-
   <section id="hardware">
     <h2> Hardware Design</h2>
 
     <h3>Schematics and Pin Mapping</h3>
     <figure>
-    <img src ="Images/schematics.jpg" alt="Complete schematic of ATtiny85-based 555 Timer IC Visualizer" style="max-width:100%; height:auto;">
-    
+    <img src ="Images/schematics.jpg" alt="Complete schematic of ATtiny85-based 555 Timer IC Visualizer" class="large-image">
     <figcaption>
     Figure 4.1 – Schematic of 555 Timer IC Visualizer
   </figcaption>
@@ -136,169 +285,165 @@
     
     <h3>Components Required</h3>
     
-<table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
-    <thead>
-        <tr style="background-color: #f2f2f2;">
-            <th>Classification</th>
-            <th>Component ID</th>
-            <th>Component Name / Value</th>
-            <th>Quantity</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan="5" style="font-weight: bold;">Integrated Circuits (ICs)</td>
-            <td>U1, U2, U3</td>
-            <td>NE555D</td>
-            <td>3</td>
-            <td>Precision Timer IC (likely SOIC-8 or DIP-8 package)</td>
-        </tr>
-        <tr>
-            <td>U4</td>
-            <td>74HC595</td>
-            <td>1</td>
-            <td>8-bit Shift Register (Serial-in, Parallel-out)</td>
-        </tr>
-        <tr>
-            <td>U5</td>
-            <td>74HC165</td>
-            <td>1</td>
-            <td>8-bit Shift Register (Parallel-in, Serial-out)</td>
-        </tr>
-        <tr>
-            <td>U6</td>
-            <td>LM7805</td>
-            <td>1</td>
-            <td>5V Voltage Regulator</td>
-        </tr>
-        <tr>
-            <td>U7</td>
-            <td>ATtiny85</td>
-            <td>1</td>
-            <td>8-bit AVR Microcontroller</td>
-        </tr>
+    <div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Classification</th>
+                <th>Component ID</th>
+                <th>Component Name / Value</th>
+                <th>Quantity</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="5" style="font-weight: bold;">Integrated Circuits (ICs)</td>
+                <td>U1, U2, U3</td>
+                <td>NE555D</td>
+                <td>3</td>
+                <td>Precision Timer IC (likely SOIC-8 or DIP-8 package)</td>
+            </tr>
+            <tr>
+                <td>U4</td>
+                <td>74HC595</td>
+                <td>1</td>
+                <td>8-bit Shift Register (Serial-in, Parallel-out)</td>
+            </tr>
+            <tr>
+                <td>U5</td>
+                <td>74HC165</td>
+                <td>1</td>
+                <td>8-bit Shift Register (Parallel-in, Serial-out)</td>
+            </tr>
+            <tr>
+                <td>U6</td>
+                <td>LM7805</td>
+                <td>1</td>
+                <td>5V Voltage Regulator</td>
+            </tr>
+            <tr>
+                <td>U7</td>
+                <td>ATtiny85</td>
+                <td>1</td>
+                <td>8-bit AVR Microcontroller</td>
+            </tr>
 
-        <tr>
-            <td rowspan="2" style="font-weight: bold;">Transistors & MOSFETs</td>
-            <td>Q1, Q3, Q6</td>
-            <td>IRF9540N</td>
-            <td>3</td>
-            <td>P-Channel Power MOSFET</td>
-        </tr>
-        <tr>
-            <td>Q2, Q4, Q7</td>
-            <td>BC547</td>
-            <td>3</td>
-            <td>NPN General Purpose Transistor</td>
-        </tr>
+            <tr>
+                <td rowspan="2" style="font-weight: bold;">Transistors & MOSFETs</td>
+                <td>Q1, Q3, Q6</td>
+                <td>IRF9540N</td>
+                <td>3</td>
+                <td>P-Channel Power MOSFET</td>
+            </tr>
+            <tr>
+                <td>Q2, Q4, Q7</td>
+                <td>BC547</td>
+                <td>3</td>
+                <td>NPN General Purpose Transistor</td>
+            </tr>
 
-        <tr>
-            <td rowspan="2" style="font-weight: bold;">Diodes & LEDs</td>
-            <td>D1, D3, D5</td>
-            <td>LED</td>
-            <td>3</td>
-            <td>Generic Light Emitting Diode (Color of choice)</td>
-        </tr>
-        <tr>
-            <td>D2, D4, D6</td>
-            <td>1N4148</td>
-            <td>3</td>
-            <td>Small Signal Fast Switching Diode</td>
-        </tr>
+            <tr>
+                <td rowspan="2" style="font-weight: bold;">Diodes & LEDs</td>
+                <td>D1, D3, D5</td>
+                <td>LED</td>
+                <td>3</td>
+                <td>Generic Light Emitting Diode (Color of choice)</td>
+            </tr>
+            <tr>
+                <td>D2, D4, D6</td>
+                <td>1N4148</td>
+                <td>3</td>
+                <td>Small Signal Fast Switching Diode</td>
+            </tr>
 
-        <tr>
-            <td rowspan="8" style="font-weight: bold;">Resistors</td>
-            <td>R10, R11, R25</td>
-            <td>330 Ω</td>
-            <td>3</td>
-            <td rowspan="8" style="vertical-align: middle;">Standard 1/4W Resistor</td>
-        </tr>
-        <tr>
-            <td>R3, R6, R9</td>
-            <td>1 kΩ</td>
-            <td>3</td>
-        </tr>
-        <tr>
-            <td>R15, R17, R26, R27</td>
-            <td>4.7 kΩ</td>
-            <td>4</td>
-        </tr>
-        <tr>
-            <td>R1, R5, R7, R8, R14, R18, R19, R20, R21, R22, R23</td>
-            <td>10 kΩ</td>
-            <td>11</td>
-        </tr>
-        <tr>
-            <td>R13</td>
-            <td>22 kΩ</td>
-            <td>1</td>
-        </tr>
-        <tr>
-            <td>R4</td>
-            <td>33 kΩ</td>
-            <td>1</td>
-        </tr>
-        <tr>
-            <td>R2</td>
-            <td>68 kΩ</td>
-            <td>1</td>
-        </tr>
-        <tr>
-            <td>R12, R16, R24</td>
-            <td>100 kΩ</td>
-            <td>3</td>
-        </tr>
+            <tr>
+                <td rowspan="8" style="font-weight: bold;">Resistors</td>
+                <td>R10, R11, R25</td>
+                <td>330 Ω</td>
+                <td>3</td>
+                <td rowspan="8" style="vertical-align: middle;">Standard 1/4W Resistor</td>
+            </tr>
+            <tr>
+                <td>R3, R6, R9</td>
+                <td>1 kΩ</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td>R15, R17, R26, R27</td>
+                <td>4.7 kΩ</td>
+                <td>4</td>
+            </tr>
+            <tr>
+                <td>R1, R5, R7, R8, R14, R18, R19, R20, R21, R22, R23</td>
+                <td>10 kΩ</td>
+                <td>11</td>
+            </tr>
+            <tr>
+                <td>R13</td>
+                <td>22 kΩ</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>R4</td>
+                <td>33 kΩ</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>R2</td>
+                <td>68 kΩ</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>R12, R16, R24</td>
+                <td>100 kΩ</td>
+                <td>3</td>
+            </tr>
 
-        <tr>
-            <td rowspan="3" style="font-weight: bold;">Capacitors</td>
-            <td>C1</td>
-            <td>10 µF</td>
-            <td>1</td>
-            <td rowspan="2" style="vertical-align: middle;">Electrolytic (Polarized)</td>
-        </tr>
-        <tr>
-            <td>C3</td>
-            <td>100 µF</td>
-            <td>1</td>
-        </tr>
-        <tr>
-            <td>C2, C4, C5</td>
-            <td>0.1 µF (100nF)</td>
-            <td>3</td>
-            <td>Ceramic / Film (Non-polarized)</td>
-        </tr>
+            <tr>
+                <td rowspan="3" style="font-weight: bold;">Capacitors</td>
+                <td>C1</td>
+                <td>10 µF</td>
+                <td>1</td>
+                <td rowspan="2" style="vertical-align: middle;">Electrolytic (Polarized)</td>
+            </tr>
+            <tr>
+                <td>C3</td>
+                <td>100 µF</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>C2, C4, C5</td>
+                <td>0.1 µF (100nF)</td>
+                <td>3</td>
+                <td>Ceramic / Film (Non-polarized)</td>
+            </tr>
 
-        <tr>
-            <td rowspan="3" style="font-weight: bold;">Electromechanical & Modules</td>
-            <td>SW1 - SW7</td>
-            <td>Push Buttons</td>
-            <td>7</td>
-            <td>Momentary tactile switches (normally open)</td>
-        </tr>
-        <tr>
-            <td>J1</td>
-            <td>OLED Display</td>
-            <td>1</td>
-            <td>I2C OLED Module (likely SSD1306, 4-pin)</td>
-        </tr>
-        <tr>
-            <td>Power Supply</td>
-            <td>Terminal Block/Header</td>
-            <td>1</td>
-            <td>Connector for VCC/GND input</td>
-        </tr>
-    </tbody>
-</table>
-
-
-    
-    
+            <tr>
+                <td rowspan="3" style="font-weight: bold;">Electromechanical & Modules</td>
+                <td>SW1 - SW7</td>
+                <td>Push Buttons</td>
+                <td>7</td>
+                <td>Momentary tactile switches (normally open)</td>
+            </tr>
+            <tr>
+                <td>J1</td>
+                <td>OLED Display</td>
+                <td>1</td>
+                <td>I2C OLED Module (likely SSD1306, 4-pin)</td>
+            </tr>
+            <tr>
+                <td>Power Supply</td>
+                <td>Terminal Block/Header</td>
+                <td>1</td>
+                <td>Connector for VCC/GND input</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
     
   </section>
  
-  <!-- ================= SOFTWARE DESIGN ================= -->
-
   <section id="software">
   <h2>5. Software Design</h2>
 
@@ -319,7 +464,7 @@
     <li><strong>MENU:</strong> Allows the user to select the 555 timer mode</li>
     <li><strong>MODE:</strong> Actively samples and visualizes the selected 555 configuration</li>
   </ul>
-
+  
   <p>
     This approach ensures predictable execution, simplifies debugging, and prevents unnecessary background tasks
     from consuming memory or processing time.
@@ -378,25 +523,25 @@
     No dynamic memory allocation is used. All timing, sampling, and animation logic is implemented
     using non-blocking techniques to maintain responsiveness.
   </p>
-  
 
-  <a href="Code/MyCode.txt" target="_blank">
- Click here
-</a> to view the full source code
+
+  <p style="margin-top: 30px;">
+    <a href="Code/MyCode.txt" target="_blank" style="font-weight: bold;">
+     Click here to view the full source code
+    </a>
+  </p>
 
 
 </section>
 
 
 
-  <!-- ================= IMPLEMENTATION & CHALLENGES ================= -->
-
   <section id="challenges">
   <h2>6. Implementation & Challenges</h2>
 
-  <table border="1" cellspacing="0" cellpadding="8"
-         style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
-    <thead style="background-color:#f2f2f2;">
+  <div class="table-container">
+  <table>
+    <thead>
       <tr>
         <th>Category</th>
         <th>Problem</th>
@@ -447,64 +592,51 @@
       </tr>
     </tbody>
   </table>
-</section>  <!-- ================= RESULTS ================= -->
-
-  <section id="results">
+  </div>
+</section>  <section id="results">
     <h2> Results</h2>
    <p>The system enables beginners to actively explore the internal behavior of the 555 timer by manually controlling each operating mode and directly observing how user-driven inputs translate into real-time waveform changes, fostering deeper conceptual understanding through hands-on experimentation.</p>
    
    
    <figure>
-    <img src ="Images/menu_front.jpg" alt="Menu screen image" style="max-width:100%; height:auto;">
-    
+    <img src ="Images/menu_front.jpg" alt="Menu screen image">
     <figcaption>
     Figure 4.2 – Menu screen
   </figcaption>
-
     </figure>
     
  
  <figure>
-    <img src ="Images/aesthetics.jpg" alt="Breadboard circuit image" style="max-width:100%; height:auto;">
-    
+    <img src ="Images/aesthetics.jpg" alt="Breadboard circuit image" class="large-image">
     <figcaption>
     Figure 4.3 – Breadboard circuit
   </figcaption>   
-    
     </figure>
     
     
     <figure>
-    <img src ="Images/ui_graphics_oled.jpg" alt="OLED Graphics image" style="max-width:100%; height:auto;">
-    
+    <img src ="Images/ui_graphics_oled.jpg" alt="OLED Graphics image">
     <figcaption>
     Figure 4.4 – OLED Interface and waveforms
   </figcaption>
-
     </figure>
 
 
 <figure>
-    <img src ="Images/arduino_attiny.jpg" alt=" Arduino Uno & ATtiny85 image " style="max-width:100%; height:auto;">
-    
+    <img src ="Images/arduino_attiny.jpg" alt=" Arduino Uno & ATtiny85 image ">
    <figcaption>
     Figure 4.5 - Arduino Uno and ATtiny85
   </figcaption> 
-    
     </figure>
 
 
    </section>
-
-  <!-- ================= CONCLUSION ================= -->
 
   <section id="conclusion">
     <h2> Conclusion</h2>
     <p>This project demonstrates how a simple learning concept can be transformed into a deeper, more intuitive experience through thoughtful hardware and software design. By combining the 555 Timer IC with a compact microcontroller-based visualization system, abstract timing behavior becomes directly observable and easier to understand.</p> <p> The final system not only meets its educational goals but also highlights the value of learning through experimentation, constraints, and hands-on problem solving.</p>
   </section>
 
-
-  <!-- ================= FUTURE IMPROVEMENTS ================= -->
 
   <section id="future">
   <h2>Future Improvements</h2>
@@ -524,13 +656,10 @@
   </ul>
 </section>
 
-  <!-- ================= REFERENCES ================= -->
-
   <section id="references">
     <h2> References</h2>
     <h3>Datasheets</h3>
-<!-- ================= DATASHEETS ================= -->
-  <p>
+<p>
     The following component datasheets are provided for reference.
   </p>
 
@@ -596,7 +725,7 @@
       <hr>
 
 <section id="author-info">
-  <h3>Author Information</h3>
+  <h2>Author Information</h2>
 
   <p><strong> V P Adhil Krishnan</strong><br>
   Undergraduate Student, Electronics and Communication Engineering<br>
@@ -608,24 +737,22 @@
     All designs, schematics, and firmware were independently developed and tested
     by the author.
   </p>
-
-  <p><strong>Contact Details:</strong></p>
 <br>
+<br>
+  <p><strong>Contact Details:</strong></p>
   <p align="center">
   <a href="mailto:adhilkrishnan9@gmail.com">
-    <img src="Images/gmail.png" alt="Email" width="16" height="16">
+    <img src="gmail.png" alt="Email" width="32" height="32" style="border:none; box-shadow:none; width:32px; height:32px;">
   </a>
-  &nbsp;&nbsp;
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://www.linkedin.com/in/Adhil-krishnan" target="_blank">
-    <img src="Images/linkedin.png" alt="LinkedIn" width="16" height="16">
+    <img src="linkedin.png" alt="LinkedIn" width="32" height="32" style="border:none; box-shadow:none; width:32px; height:32px;">
   </a>
-</p>
- 
- <br>
+</p> 
  <br>
   <p align="center">&copy; 2026 — All rights reserved.</p>
 </section>
       
 
-</body>   
+</body>
 </html>
