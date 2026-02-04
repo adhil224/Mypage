@@ -40,6 +40,7 @@
       border-bottom: 2px solid #eee;
       padding-bottom: 8px;
       margin-top: 35px;
+      scroll-margin-top: 20px; /* offset for smooth scrolling landing */
     }
 
     /* 3. Header Styling */
@@ -50,6 +51,51 @@
       padding: 30px;
       border-radius: 8px;
       border: 1px solid #eef;
+    }
+
+    /* === NEW STYLES FOR TABLE OF CONTENTS === */
+    #toc {
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 40px;
+    }
+
+    #toc h3 {
+      margin-top: 0;
+      color: #007BFF;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 10px;
+    }
+
+    #toc ul {
+      list-style-type: none; /* Remove bullets */
+      padding-left: 0;
+    }
+
+    #toc li {
+      margin-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    #toc li:last-child {
+      border-bottom: none;
+    }
+
+    #toc a {
+      text-decoration: none;
+      color: #333;
+      display: block; /* Make the whole area clickable */
+      padding: 5px;
+      transition: background-color 0.2s, padding-left 0.2s;
+    }
+
+    #toc a:hover {
+      background-color: #eef6ff;
+      color: #007BFF;
+      padding-left: 10px; /* Slight indent animation */
+      border-radius: 4px;
     }
 
     /* 4. Image Styling - FIXED */
@@ -165,8 +211,24 @@
     <p><strong>Institution:</strong> Government Engineering College, Kozhikode</p>
     <p><strong>Batch : </strong> S2, ECE 2k25</p>
     <p><strong>Date:</strong> January 2026</p>
-    </header>
+  </header>
 
+  <nav id="toc">
+    <h3>Table of Contents</h3>
+    <ul>
+      <li><a href="#introduction">1. Introduction</a></li>
+      <li><a href="#objectives">2. Objectives</a></li>
+      <li><a href="#overview">3. System Overview</a></li>
+      <li><a href="#hardware">4. Hardware Design</a></li>
+      <li><a href="#software">5. Software Design</a></li>
+      <li><a href="#challenges">6. Implementation & Challenges</a></li>
+      <li><a href="#results">7. Results</a></li>
+      <li><a href="#conclusion">8. Conclusion</a></li>
+      <li><a href="#future">9. Future Improvements</a></li>
+      <li><a href="#references">10. References</a></li>
+      <li><a href="#author-info">11. Author Information</a></li>
+    </ul>
+  </nav>
 
   <section id="introduction">
     <h2> Introduction</h2>
@@ -755,3 +817,4 @@
 
 </body>
 </html>
+
